@@ -27,6 +27,24 @@ Three handlers do the work:
 
 The handlers call Claude via the CLI (`claude -p ...`), spawned as a subprocess. See `handlers/call-claude.ts`.
 
+## Why barnum
+
+Barnum pipelines separate *what happens* from *how it's orchestrated*. Each handler is a plain async function that does one thing. The pipeline decides the order, parallelism, and data flow between them.
+
+This matters because not every step needs an LLM. `listDocs` is just `readdirSync` -- there's no reason to send a filesystem listing through Claude. `extractStatements` and `evaluateStatement` need Claude because they require judgment. Barnum lets you mix LLM calls and ordinary code in the same pipeline without treating everything as a prompt. You use LLMs where they add value and plain code where they don't.
+
+The pipeline also makes parallelism explicit. `.map(evaluateStatement)` evaluates all 5 claims concurrently -- barnum dispatches them in parallel automatically. If we used `.fold()` instead, they'd run sequentially. The pipeline shape declares the execution strategy; the handlers don't need to know or care.
+
+## Making it more robust
+
+This demo has no error handling. Claude calls can fail (timeout, rate limit, malformed JSON response). In production you'd want:
+
+- **Timeouts** on each Claude call via [`withTimeout`](https://barnum-circus.github.io/docs/patterns/timeout). If Claude hangs for 30 seconds, kill it and move on.
+- **Retry with error recovery** via [`tryCatch`](https://barnum-circus.github.io/docs/patterns/error-handling) + `loop`. If `extractStatements` returns malformed JSON, catch the parse error and retry (up to N times).
+- **Graceful degradation** with `Result`. Instead of letting one bad claim crash the whole pipeline, each `evaluateStatement` could return `Result<Finding, Error>`, and the pipeline could `.collectResult()` or filter out failures.
+
+The barnum patterns for all of these are compositional -- you wrap the relevant section of the pipeline without restructuring the rest.
+
 ## How we built it
 
 The pipeline in `run.ts` and the handler definitions in `handlers/steps.ts` were vibe-coded -- written by prompting Claude Code with what we wanted and iterating on the output. The `docs/` folder contains sample documentation and `src/` contains the sample React app the docs describe.
