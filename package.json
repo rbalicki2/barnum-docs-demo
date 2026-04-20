@@ -11,7 +11,7 @@
   },
   "packageManager": "pnpm@10.27.0",
   "dependencies": {
-    "@barnum/barnum": "0.0.0-main-62591ad8",
+    "@barnum/barnum": "0.0.0-main-6e2d3c0c",
     "@types/node": "^25.6.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",

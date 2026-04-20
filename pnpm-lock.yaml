@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@barnum/barnum':
-        specifier: 0.0.0-main-62591ad8
-        version: 0.0.0-main-62591ad8(zod@4.3.6)
+        specifier: 0.0.0-main-6e2d3c0c
+        version: 0.0.0-main-6e2d3c0c(zod@4.3.6)
       '@types/node':
         specifier: ^25.6.0
         version: 25.6.0
@@ -44,8 +44,8 @@ importers:
 
 packages:
 
-  '@barnum/barnum@0.0.0-main-62591ad8':
-    resolution: {integrity: sha512-2VVEKGAZ41Gy00ek6QwSBNIhHFCDvZaaTs6NUdSWBltQ9qEaxrTPeEJsBUNfKWV2/uz3kJi59t2PEKwzeWiAnA==}
+  '@barnum/barnum@0.0.0-main-6e2d3c0c':
+    resolution: {integrity: sha512-u/a/4ZazzEy2H8tCqZn8ZypaApVVM7ApocEeicH3qK7m6jCgw18dioQmOP6y4RXNTOqLgKQU1rzVhH68uAcUWw==}
     hasBin: true
     peerDependencies:
       zod: ^4.3.6
@@ -553,7 +553,7 @@ packages:
 
 snapshots:
 
-  '@barnum/barnum@0.0.0-main-62591ad8(zod@4.3.6)':
+  '@barnum/barnum@0.0.0-main-6e2d3c0c(zod@4.3.6)':
     dependencies:
       zod: 4.3.6
 

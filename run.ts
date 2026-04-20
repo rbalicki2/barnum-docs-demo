@@ -5,6 +5,8 @@ const findings = await runPipeline(
   listDocs
     .iterate()
     .flatMap(extractStatements)
+    // Limit to 5 statements for demo purposes
+    .take(5)
     .map(evaluateStatement)
     .collect(),
 );
