@@ -1,7 +1,6 @@
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { createHandler, optionSchema, some, none } from "@barnum/barnum/runtime";
-import type { Option } from "@barnum/barnum/pipeline";
+import { createHandler } from "@barnum/barnum/runtime";
 import { z } from "zod";
 import { docsDir, srcDir, stripCodeFences } from "./lib";
 import { callClaude } from "./call-claude";
@@ -110,17 +109,16 @@ const FindingValidator = z.object({
   location: z.string(),
   fileNumber: z.number(),
   lineNumber: z.number(),
+  valid: z.boolean(),
   reason: z.string(),
   claim: z.string(),
 });
 
-type Finding = z.infer<typeof FindingValidator>;
-
 export const evaluateStatement = createHandler(
   {
     inputValidator: StatementValidator,
-    outputValidator: optionSchema(FindingValidator),
-    handle: async ({ value }): Promise<Option<Finding>> => {
+    outputValidator: FindingValidator,
+    handle: async ({ value }) => {
       console.error(
         `[evaluateStatement] Checking: "${value.claim}" (${value.fileName}:${value.lineNumber})`,
       );
@@ -136,33 +134,30 @@ export const evaluateStatement = createHandler(
           `The source code lives under: ${srcDir}`,
           "",
           "Read whatever source files you need to verify this claim.",
-          "Then return a JSON object with exactly one of these shapes:",
+          "Then return a JSON object with exactly these two keys:",
           "",
-          '  If the claim is CORRECT:   { "valid": true }',
-          '  If the claim is INCORRECT: { "valid": false, "reason": "why it is wrong and what is actually true" }',
+          '  { "valid": true or false, "reason": "explanation — why it is correct, or why it is wrong and what is actually true" }',
           "",
           "Return ONLY the raw JSON object. No markdown fences, no extra text.",
         ].join("\n"),
         allowedTools: [`Read(//${srcDir}/**)`],
       });
 
-      const result: { valid: boolean; reason?: string } = JSON.parse(
+      const result: { valid: boolean; reason: string } = JSON.parse(
         stripCodeFences(response),
       );
 
-      if (result.valid) {
-        console.error(`[evaluateStatement]   ✓ valid`);
-        return none();
-      }
+      const tag = result.valid ? "✓" : "✗";
+      console.error(`[evaluateStatement]   ${tag} ${result.reason}`);
 
-      console.error(`[evaluateStatement]   ✗ invalid — ${result.reason}`);
-      return some({
+      return {
         location: `${value.fileName}:${value.lineNumber}`,
         fileNumber: value.fileNumber,
         lineNumber: value.lineNumber,
-        reason: result.reason ?? "unknown",
+        valid: result.valid,
+        reason: result.reason,
         claim: value.claim,
-      });
+      };
     },
   },
   "evaluateStatement",

@@ -5,7 +5,7 @@ const findings = await runPipeline(
   listDocs
     .iterate()
     .flatMap(extractStatements)
-    .flatMap(evaluateStatement)
+    .map(evaluateStatement)
     .collect(),
 );
 
